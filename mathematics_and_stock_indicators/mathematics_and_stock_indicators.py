@@ -1,7 +1,6 @@
 """
 DOCSTRING
 """
-
 import urllib
 import matplotlib
 import matplotlib.dates as mpl_dates
@@ -22,6 +21,32 @@ def bytes_date_to_number(fmt, encoding='utf-8'):
         string = b_variable.decode(encoding)
         return string_converter(string)
     return bytes_converter
+
+def calculate_r(high_2, close_1, low_2, open_1, limit_move):
+    """
+    DOCSTRING
+    """
+    x_variable = high_2-close_1
+    y_variable = low_2-close_1
+    z_variable = high_2-low_2
+    print(x_variable)
+    print(y_variable)
+    print(z_variable)
+    if z_variable < x_variable > y_variable:
+        print('x wins')
+        r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
+        print(r_variable)
+        return r_variable
+    elif x_variable < y_variable > z_variable:
+        print('y wins')
+        r_variable = (low_2-close_1)-(0.5*(high_2-close_1))+(0.25*(close_1-open_1))
+        print(r_variable)
+        return r_variable
+    elif x_variable < z_variable > y_variable:
+        print('z wins')
+        r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
+        print(r_variable)
+        return r_variable
 
 def compute_macd(x_variable, slow=26, fast=12):
     """
@@ -260,8 +285,8 @@ def moving_average(values, window):
     DOCSTRING
     """
     weigths = numpy.repeat(1.0, window)/window
-    smas = numpy.convolve(values, weigths, 'valid')
-    return smas
+    simple_moving_averages = numpy.convolve(values, weigths, 'valid')
+    return simple_moving_averages
 
 def relative_strength_index_calculation(prices, n_variable=14):
     """
