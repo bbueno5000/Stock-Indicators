@@ -22,31 +22,63 @@ def bytes_date_to_number(fmt, encoding='utf-8'):
         return string_converter(string)
     return bytes_converter
 
-def calculate_r(high_2, close_1, low_2, open_1, limit_move):
+def swing_index_calculation(
+    open_1,
+    open_2,
+    high_1,
+    high_2,
+    low_1,
+    low_2,
+    close_1,
+    close_2,
+    limit_move
+    ):
     """
     DOCSTRING
     """
-    x_variable = high_2-close_1
-    y_variable = low_2-close_1
-    z_variable = high_2-low_2
-    print(x_variable)
-    print(y_variable)
-    print(z_variable)
-    if z_variable < x_variable > y_variable:
-        print('x wins')
-        r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
-        print(r_variable)
-        return r_variable
-    elif x_variable < y_variable > z_variable:
-        print('y wins')
-        r_variable = (low_2-close_1)-(0.5*(high_2-close_1))+(0.25*(close_1-open_1))
-        print(r_variable)
-        return r_variable
-    elif x_variable < z_variable > y_variable:
-        print('z wins')
-        r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
-        print(r_variable)
-        return r_variable
+    def calculate_k(high_2, low_2, close_1):
+        """
+        DOCSTRING
+        """
+        x_variable = high_2-close_1
+        y_variable = low_2-close_1
+        if x_variable > y_variable:
+            k_variable = x_variable
+            print(k_variable)
+            return k_variable
+        else:
+            k_variable = y_variable
+            print(k_variable)
+            return k_variable
+
+    def calculate_r(high_2, close_1, low_2, open_1, limit_move):
+        """
+        DOCSTRING
+        """
+        x_variable = high_2-close_1
+        y_variable = low_2-close_1
+        z_variable = high_2-low_2
+        print(x_variable)
+        print(y_variable)
+        print(z_variable)
+        if z_variable < x_variable > y_variable:
+            print('x wins')
+            r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
+        elif x_variable < y_variable > z_variable:
+            print('y wins')
+            r_variable = (low_2-close_1)-(0.5*(high_2-close_1))+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
+        elif x_variable < z_variable > y_variable:
+            print('z wins')
+            r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
+
+    r_value = calculate_r(high_2, close_2, low_2, open_1, limit_move)
+    k_value = calculate_k(high_2, low_2, close_1)
 
 def compute_macd(x_variable, slow=26, fast=12):
     """
