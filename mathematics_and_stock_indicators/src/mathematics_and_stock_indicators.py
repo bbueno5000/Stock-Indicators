@@ -380,7 +380,46 @@ def relative_strength_index_calculation(prices, n_variable=14):
         relative_strength_index[i] = 100.0-100.0/(1.0+relative_strength)
     return relative_strength_index
 
+sample_data = open('data/sample_data.txt', 'r').read()
+split_data = sample_data.split('\n')
+date, close_price, high_price, low_price, open_price, volume = numpy.loadtxt(
+    split_data, 
+    delimiter=',', 
+    unpack=True
+    )
+
+def true_range(date, close_price, high_price, low_price, open_price, yesterdays_close_price):
+    x_variable = high_price-low_price
+    y_variable = abs(high_price-yesterdays_close_price)
+    z_variable = abs(low_price-yesterdays_close_price)
+    if y_variable <= x_variable >= z_variable:
+        true_range = x_variable
+    elif x_variable <= y_variable >= z_variable:
+        true_range = y_variable
+    elif x_variable <= z_variable >= y_variable:
+        true_range = z_variable
+    print(date, true_range)
+    return date, true_range
+
+x_variable = 1
+true_range_dates = []
+true_ranges = []
+
+while x_variable < len(date):
+    true_range_date, true_range = true_range(
+        date[x_variable], 
+        close_price[x_variable], 
+        high_price[x_variable], 
+        low_price[x_variable], 
+        open_price[x_variable], 
+        close_price[x_variable-1]
+        )
+    true_range_dates.append(true_range_date)
+    true_ranges.append(true_range)
+    print(true_range)
+    x_variable += 1
+
 if __name__ == '__main__':
     while True:
-        STOCK = input('Stock to plot: ')
+        STOCK = input('Stock to plot:')
         graph_data(STOCK, 10, 50)
