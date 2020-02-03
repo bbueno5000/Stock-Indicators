@@ -1,6 +1,7 @@
 """
 DOCSTRING
 """
+import datetime
 import urllib
 import matplotlib
 import matplotlib.dates as mpl_dates
@@ -11,6 +12,8 @@ import numpy
 import pylab
 
 matplotlib.rcParams.update({'font.size': 9})
+
+LIMIT_MOVE = 75
 
 def bytes_date_to_number(fmt, encoding='utf-8'):
     """
@@ -76,9 +79,13 @@ def swing_index_calculation(
             r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
             print(r_variable)
             return r_variable
-
     r_value = calculate_r(high_2, close_2, low_2, open_1, limit_move)
     k_value = calculate_k(high_2, low_2, close_1)
+    top_fraction = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
+    whole_fraction = top_fraction/r_value
+    swing_index = 50*whole_fraction*(k_value/limit_move)
+    print(swing_index)
+    return swing_index
 
 def compute_macd(x_variable, slow=26, fast=12):
     """
@@ -117,8 +124,13 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
             split_source = source_code.split('\n')
             for each_line in split_source:
                 split_line = each_line.split(',')
+                fix_me = split_line[0]
                 if len(split_line) == 6:
                     if 'values' not in each_line:
+                        each_line = each_line.replace(
+                            fix_me,
+                            str(datetime.datetime.fromtimestamp(int(fix_me)).strftime('%Y-%m-%d %H:%M:%S'))
+                            )
                         stock_file.append(each_line)
         except Exception as exception:
             print(str(exception), 'failed to organize pulled data.')
@@ -129,7 +141,7 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
             stock_file,
             delimiter=',',
             unpack=True,
-            converters={0: bytes_date_to_number('%Y%m%d')}
+            converters={0: bytes_date_to_number('%Y-%m-%d %H:%M:%S')}
             )
         x_variable = 0
         y_variable = len(date)
@@ -153,7 +165,7 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
         mpl_finance.candlestick_ohlc(
             axis_1,
             new_array[-starting_point:],
-            width=0.6,
+            width=0.0006,
             colorup='#53c156',
             colordown='#ff1717'
             )
@@ -282,6 +294,29 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
             facecolor=fillcolor,
             edgecolor=fillcolor
             )
+        swing_index_y = []
+        swing_index_date = []
+        x_variable = 1
+        while x_variable < len(date[1:]):
+            try:
+                y_variable = swing_index_calculation(
+                    open_price[x_variable-1],
+                    open_price[x_variable],
+                    high_price[x_variable-1],
+                    high_price[x_variable],
+                    low_price[x_variable-1],
+                    low_price[x_variable],
+                    close_price[x_variable-1],
+                    close_price[x_variable],
+                    LIMIT_MOVE
+                    )
+                swing_index_y.append(y_variable)
+                swing_index_date.append(date[x_variable])
+                x_variable += 1
+            except Exception as exception:
+                print(str(exception))
+                x_variable += 1
+        axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
         pyplot.gca().yaxis.set_major_locator(mpl_ticker.MaxNLocator(prune='upper'))
         axis_2.spines['bottom'].set_color("#5998ff")
         axis_2.spines['top'].set_color("#5998ff")
