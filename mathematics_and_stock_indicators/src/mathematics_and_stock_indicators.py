@@ -317,6 +317,49 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
                 print(str(exception))
                 x_variable += 1
         axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
+
+        def true_range(
+            date, 
+            close_price, 
+            high_price, 
+            low_price, 
+            open_price, 
+            yesterdays_close_price
+            ):
+            x_variable = high_price-low_price
+            y_variable = abs(high_price-yesterdays_close_price)
+            z_variable = abs(low_price-yesterdays_close_price)
+            if y_variable <= x_variable >= z_variable:
+                true_range = x_variable
+            elif x_variable <= y_variable >= z_variable:
+                true_range = y_variable
+            elif x_variable <= z_variable >= y_variable:
+                true_range = z_variable
+            print(date, true_range)
+            return date, true_range
+
+        x_variable = 1
+        true_range_dates = []
+        true_ranges = []
+
+        while x_variable < len(date):
+            true_range_date, true_range = true_range(
+                date[x_variable], 
+                close_price[x_variable], 
+                high_price[x_variable], 
+                low_price[x_variable], 
+                open_price[x_variable], 
+                close_price[x_variable-1]
+                )
+            true_range_dates.append(true_range_date)
+            true_ranges.append(true_range)
+            print(true_range)
+            x_variable += 1
+
+        average_true_ranges = exponential_moving_average(true_ranges, 14)
+        axis_2.plot(true_range_dates[-starting_point:], average_true_ranges[-starting_point:], 'w')
+        pyplot.ylabel('ATR(14)', negative_color='w')
+
         pyplot.gca().yaxis.set_major_locator(mpl_ticker.MaxNLocator(prune='upper'))
         axis_2.spines['bottom'].set_color("#5998ff")
         axis_2.spines['top'].set_color("#5998ff")
@@ -388,36 +431,6 @@ date, close_price, high_price, low_price, open_price, volume = numpy.loadtxt(
     unpack=True
     )
 
-def true_range(date, close_price, high_price, low_price, open_price, yesterdays_close_price):
-    x_variable = high_price-low_price
-    y_variable = abs(high_price-yesterdays_close_price)
-    z_variable = abs(low_price-yesterdays_close_price)
-    if y_variable <= x_variable >= z_variable:
-        true_range = x_variable
-    elif x_variable <= y_variable >= z_variable:
-        true_range = y_variable
-    elif x_variable <= z_variable >= y_variable:
-        true_range = z_variable
-    print(date, true_range)
-    return date, true_range
-
-x_variable = 1
-true_range_dates = []
-true_ranges = []
-
-while x_variable < len(date):
-    true_range_date, true_range = true_range(
-        date[x_variable], 
-        close_price[x_variable], 
-        high_price[x_variable], 
-        low_price[x_variable], 
-        open_price[x_variable], 
-        close_price[x_variable-1]
-        )
-    true_range_dates.append(true_range_date)
-    true_ranges.append(true_range)
-    print(true_range)
-    x_variable += 1
 
 if __name__ == '__main__':
     while True:
