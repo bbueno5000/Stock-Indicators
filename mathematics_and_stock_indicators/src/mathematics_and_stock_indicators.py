@@ -476,6 +476,23 @@ def calculate_directional_indices():
         y_variable += 1
     return positive_directional_movements, negative_directional_movements
 
+def average_directional_index():
+    """
+    DOCSTRING
+    """
+    positive_directional_index, negative_directional_index = calculate_directional_indices()
+    z_variable = 0
+    directional_indices = []
+    while z_variable < len(date[1:]):
+        directional_index = 100*(
+            abs(positive_directional_index[z_variable]-negative_directional_index[z_variable])/
+            (positive_directional_index[z_variable]+negative_directional_index[z_variable])
+            )
+        directional_indices.append(directional_index)
+        z_variable += 1
+    average_directional_index = exponential_moving_average(directional_indices, 14)
+    print(average_directional_index)
+
 def directional_movement(
     date,
     open_price,
