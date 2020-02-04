@@ -2,4 +2,4 @@
 
 ## References
 
-1. [Advanced Matplotlib Series (videos and ending source only)](https://pythonprogramming.net/advanced-matplotlib-graphing-charting-tutorial/)
+1. [Advanced Matplotlib Series](https://pythonprogramming.net/advanced-matplotlib-graphing-charting-tutorial/)

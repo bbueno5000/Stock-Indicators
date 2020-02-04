@@ -317,7 +317,6 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
                 print(str(exception))
                 x_variable += 1
         axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
-
         def true_range(
             date, 
             close_price, 
@@ -337,11 +336,9 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
                 true_range = z_variable
             print(date, true_range)
             return date, true_range
-
         x_variable = 1
         true_range_dates = []
         true_ranges = []
-
         while x_variable < len(date):
             true_range_date, true_range = true_range(
                 date[x_variable], 
@@ -355,11 +352,9 @@ def graph_data(ticker_symbol, moving_average_1, moving_average_2):
             true_ranges.append(true_range)
             print(true_range)
             x_variable += 1
-
         average_true_ranges = exponential_moving_average(true_ranges, 14)
         axis_2.plot(true_range_dates[-starting_point:], average_true_ranges[-starting_point:], 'w')
         pyplot.ylabel('ATR(14)', negative_color='w')
-
         pyplot.gca().yaxis.set_major_locator(mpl_ticker.MaxNLocator(prune='upper'))
         axis_2.spines['bottom'].set_color("#5998ff")
         axis_2.spines['top'].set_color("#5998ff")
@@ -423,16 +418,97 @@ def relative_strength_index_calculation(prices, n_variable=14):
         relative_strength_index[i] = 100.0-100.0/(1.0+relative_strength)
     return relative_strength_index
 
-sample_data = open('data/sample_data.txt', 'r').read()
-split_data = sample_data.split('\n')
-date, close_price, high_price, low_price, open_price, volume = numpy.loadtxt(
+def calculate_directional_indices():
+    """
+    DOCSTRING
+    """
+    x_variable = 1
+    true_range_dates = []
+    true_ranges = []
+    positive_directional_movements = []
+    negative_directional_movements = []
+    while x_variable < len(date):
+        true_range_date, true_range = true_range(
+            date[x_variable], 
+            close_price[x_variable], 
+            high_price[x_variable], 
+            low_price[x_variable], 
+            open_price[x_variable], 
+            close_price[x_variable-1]
+            )
+        true_range_dates.append(true_range_date)
+        true_ranges.append(true_range)
+        directional_movement_date, positive_directional_movement, negative_directional_movement = directional_movement(
+            date[x_variable],
+            open_price[x_variable],
+            high_price[x_variable],
+            low_price[x_variable],
+            close_price[x_variable],
+            open_price[x_variable-1],
+            high_price[x_variable-1],
+            low_price[x_variable-1],
+            close_price[x_variable-1],
+            )
+        positive_directional_movements.append(positive_directional_movement)
+        negative_directional_movements.append(negative_directional_movement)
+        x_variable += 1
+    exponential_positive_directional_movement = exponential_moving_average(
+        positive_directional_movements, 
+        14
+        )
+    exponential_negative_directional_movement = exponential_moving_average(
+        negative_directional_movements, 
+        14
+        )
+    average_true_ranges = exponential_moving_average(true_ranges, 14)
+    y_variable = 1
+    positive_directional_movements = []
+    negative_directional_movements = []
+    while y_variable < len(average_true_ranges):
+        positive_directional_movement = 100*(
+            exponential_positive_directional_movement[y_variable]/average_true_ranges[y_variable]
+            )
+        positive_directional_movements.append(positive_directional_movement)
+        negative_directional_movement = 100*(
+            exponential_negative_directional_movement[y_variable]/average_true_ranges[y_variable]
+            )
+        negative_directional_movements.append(negative_directional_movement)
+        y_variable += 1
+    return positive_directional_movements, negative_directional_movements
+
+def directional_movement(
+    date,
+    open_price,
+    high_price,
+    low_price,
+    close_price,
+    yesterdays_open_price,
+    yesterdays_high_price,
+    yesterdays_low_price,
+    yesterdays_close_price):
+    """
+    DOCSTRING
+    """
+    move_up = high_price-yesterdays_high_price
+    move_down = low_price-yesterdays_low_price
+    if 0 < move_up > move_down:
+        positive_directional_movement = move_up
+    else:
+        positive_directional_movement = 0
+    if 0 < move_down > move_up:
+        negative_directional_movement = move_down
+    else:
+        negative_directional_movement = 0
+    return date, positive_directional_movement, negative_directional_movement
+
+if __name__ == '__main__':
+    sample_data = open('data/sample_data.txt', 'r').read()
+    split_data = sample_data.split('\n')
+    date, close_price, high_price, low_price, open_price, volume = numpy.loadtxt(
     split_data, 
     delimiter=',', 
     unpack=True
     )
-
-
-if __name__ == '__main__':
     while True:
         STOCK = input('Stock to plot:')
         graph_data(STOCK, 10, 50)
