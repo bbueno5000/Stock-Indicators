@@ -330,6 +330,25 @@ class StockIndicators:
     """
     A collection of stock indicators.
     """
+    def aroon(timeframe):
+        """
+        Calculate Aroon.
+        """
+        aroon_ups = []
+        aroon_downs=[]
+        aroon_dates = []
+        for x_variable in range(timeframe, len(date)):
+            aroon_up = ((high_price[x_variable-timefram:x_variable].to_list().index(
+                max(high_price[x_variable-timeframe:x_variable])
+                ))/float(timeframe))*100
+            aroon_down = ((low_price[x_variable-timefram:x_variable].to_list().index(
+                max(low_price[x_variable-timeframe:x_variable])
+                ))/float(timeframe))*100
+            aroon_ups.append(aroon_up)
+            aroon_downs.append(aroon_down)
+            aroon_dates.append(date[x_variable])
+        return aroon_dates, aroon_ups, aroon_downs
+
     def average_directional_index():
         """
         Calculate average directional index.
