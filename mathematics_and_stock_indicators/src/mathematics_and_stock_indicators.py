@@ -77,10 +77,8 @@ class GraphData:
                 unpack=True,
                 converters={0: bytes_date_to_number('%Y-%m-%d %H:%M:%S')}
                 )
-            x_variable = 0
-            y_variable = len(date)
             new_array = []
-            while x_variable < y_variable:
+            for x_variable in range(0, len(date)):
                 append_line = (
                     date[x_variable],
                     open_price[x_variable],
@@ -90,7 +88,6 @@ class GraphData:
                     volume[x_variable]
                     )
                 new_array.append(append_line)
-                x_variable += 1
             average_1 = moving_average(close_price, moving_average_1)
             average_2 = moving_average(close_price, moving_average_2)
             starting_point = len(date[moving_average_2-1:])
@@ -230,8 +227,7 @@ class GraphData:
                 )
             swing_index_y = []
             swing_index_date = []
-            x_variable = 1
-            while x_variable < len(date[1:]):
+            for x_variable in range(1, len(date[1:])):
                 try:
                     y_variable = swing_index_calculation(
                         open_price[x_variable-1],
@@ -246,13 +242,9 @@ class GraphData:
                         )
                     swing_index_y.append(y_variable)
                     swing_index_date.append(date[x_variable])
-                    x_variable += 1
                 except Exception as exception:
                     print(str(exception))
-                    x_variable += 1
             axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
-            average_true_ranges = StockIndicators().exponential_moving_average(true_ranges, 14)
-            axis_2.plot(true_range_dates[-starting_point:], average_true_ranges[-starting_point:], 'w')
             pyplot.ylabel('ATR(14)', negative_color='w')
             pyplot.gca().yaxis.set_major_locator(mpl_ticker.MaxNLocator(prune='upper'))
             axis_2.spines['bottom'].set_color("#5998ff")
@@ -359,12 +351,11 @@ class StockIndicators:
         """
         Calculate directional indices.
         """
-        x_variable = 1
         true_range_dates = []
         true_ranges = []
         positive_directional_movements = []
         negative_directional_movements = []
-        while x_variable < len(date):
+        for x_variable in range(1, len(date)):
             true_range_date, true_range = true_range(
                 date[x_variable],
                 close_price[x_variable],
@@ -390,7 +381,6 @@ class StockIndicators:
                     )
             positive_directional_movements.append(positive_directional_movement)
             negative_directional_movements.append(negative_directional_movement)
-            x_variable += 1
         exponential_positive_directional_movement = exponential_moving_average(
             positive_directional_movements, 14
             )
@@ -473,9 +463,6 @@ class StockIndicators:
             x_variable = high_2-close_1
             y_variable = low_2-close_1
             z_variable = high_2-low_2
-            print(x_variable)
-            print(y_variable)
-            print(z_variable)
             if z_variable < x_variable > y_variable:
                 print('x wins')
                 r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
@@ -496,7 +483,6 @@ class StockIndicators:
         top_fraction = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
         whole_fraction = top_fraction/r_value
         swing_index = 50*whole_fraction*(k_value/limit_move)
-        print(swing_index)
         return swing_index
 
     def true_range(
@@ -520,10 +506,9 @@ class StockIndicators:
             true_range = z_variable
         print(date, true_range)
         return date, true_range
-    x_variable = 1
     true_range_dates = []
     true_ranges = []
-    while x_variable < len(date):
+    for x_variable in range(1, len(date)):
         true_range_date, true_range = true_range(
             date[x_variable], 
             close_price[x_variable], 
@@ -535,7 +520,6 @@ class StockIndicators:
         true_range_dates.append(true_range_date)
         true_ranges.append(true_range)
         print(true_range)
-        x_variable += 1
 
 if __name__ == '__main__':
     sample_data = open('data/sample_data.txt', 'r').read()
