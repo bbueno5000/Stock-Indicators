@@ -90,8 +90,8 @@ class GraphData:
                     volume[count]
                     )
                 new_array.append(append_line)
-            average_1 = self.moving_average(close_price, moving_average_1)
-            average_2 = self.moving_average(close_price, moving_average_2)
+            average_1 = self.simple_moving_average(close_price, moving_average_1)
+            average_2 = self.simple_moving_average(close_price, moving_average_2)
             starting_point = len(date[moving_average_2-1:])
             figure = pyplot.figure(facecolor='#07000d')
             axis_1 = pyplot.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4, axisbg='#07000d')
@@ -229,19 +229,19 @@ class GraphData:
                 )
             swing_index_y = []
             swing_index_date = []
-            for x_variable in range(1, len(date[1:])):
+            for count, element in enumerate(date[1:], 1):
                 try:
                     y_variable = StockIndicators().swing_index(
-                        open_price[x_variable-1],
-                        open_price[x_variable],
-                        high_price[x_variable],
-                        low_price[x_variable],
-                        close_price[x_variable-1],
-                        close_price[x_variable],
+                        open_price[count-1],
+                        open_price[count],
+                        high_price[count],
+                        low_price[count],
+                        close_price[count-1],
+                        close_price[count],
                         LIMIT_MOVE
                         )
                     swing_index_y.append(y_variable)
-                    swing_index_date.append(date[x_variable])
+                    swing_index_date.append(element)
                 except Exception as exception:
                     print(str(exception))
             axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
@@ -293,7 +293,7 @@ class GraphData:
         ema_fast = self.exponential_moving_average(x_variable, fast)
         return ema_slow, ema_fast, ema_fast - ema_slow
 
-    def moving_average(self, values, window):
+    def simple_moving_average(self, values, window):
         """
         Calculate moving average.
         """
@@ -384,6 +384,32 @@ class StockIndicators:
         average_directional_index = GraphData().exponential_moving_average(directional_indices, 14)
         print(average_directional_index)
 
+    def bollinger_bands(self, multiplier, timeframe):
+        """
+        DOCSTRING
+        """
+        band_dates = []
+        top_bands = []
+        bottom_bands = []
+        middle_bands = []
+        for count, element in enumerate(self.date, timeframe):
+            current_simple_moving_average = GraphData().simple_moving_average(
+                self.close_price[count-timeframe:count], 
+                timeframe
+                )[-1]
+            _, current_standard_deviation = self.standard_deviation(
+                timeframe, 
+                self.close_price[0:timeframe]
+                )
+            current_standard_deviation = current_standard_deviation[-1]
+            tob_band = current_simple_moving_average+(current_standard_deviation*multiplier)
+            bottom_band = current_simple_moving_average-(current_standard_deviation*multiplier)
+            band_dates.append(element)
+            top_bands.append(top_band)
+            bottom_bands.append(bottom_band)
+            middle_bands.append(current_simple_moving_average)
+        return band_dates, top_bands, bottom_bands, middle_bands
+
     def directional_indices(self):
         """
         Calculate directional indices.
@@ -460,18 +486,18 @@ class StockIndicators:
             negative_directional_movement = 0
         return date, positive_directional_movement, negative_directional_movement
 
-    def standard_deviation(self, timeframe):
+    def standard_deviation(self, timeframe, prices):
         """
         DOCSTRING
         """
         standard_deviations = []
         standard_deviation_dates = []
-        for count, element in enumerate(self.date, timeframe):
-            array_to_consider = self.close_price[count-timeframe:count]
+        for count, element in enumerate(prices, timeframe):
+            array_to_consider = prices[count-timeframe:count]
             standard_deviation = array_to_consider.std()
             standard_deviations.append(standard_deviation)
             standard_deviation_dates.append(element)
-        return  standard_deviation_dates, standard_deviations
+        return standard_deviation_dates, standard_deviations
 
     def swing_index(
             self,
