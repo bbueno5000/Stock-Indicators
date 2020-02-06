@@ -102,6 +102,10 @@ class GraphData:
                 colorup='#53c156',
                 colordown='#ff1717'
                 )
+            date, top_band, bottom_band, middle_band = StockIndicators().bollinger_bands(2, 20)
+            axis_1.plot(date[-starting_point:], top_band[-starting_point:], '#C1F9F7', alpha=0.7)
+            axis_1.plot(date[-starting_point:], bottom_band[-starting_point:], '#C1F9F7', alpha=0.7)
+            axis_1.plot(date[-starting_point:], middle_band[-starting_point:], '#C1F9F7', alpha=0.7)
             label_1 = str(moving_average_1)+' SMA'
             label_2 = str(moving_average_2)+' SMA'
             axis_1.plot(
