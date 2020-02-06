@@ -414,6 +414,28 @@ class StockIndicators:
             middle_bands.append(current_simple_moving_average)
         return band_dates, top_bands, bottom_bands, middle_bands
 
+    def center_of_gravity(self, dates, data, timeframe):
+        """
+        DOCSTRING
+        """
+        center_of_gravities = []
+        for count, element_x in enumerate(dates):
+            consider = data[count-timeframe:count]
+            multipliers = range(1, timeframe+1)
+            numerator, denominator = 0, 0
+            reversed_order = reversed(consider)
+            ordered = []
+            for element_y in reversed_order:
+                ordered.append(element_y)
+            for multiplier in multipliers:
+                add_me = multiplier*ordered[multiplier-1]
+                add_me_2 = ordered[multiplier-1]
+                numerator += add_me
+                denominator += add_me_2
+            center_of_gravity = -(numerator/float(denominator))
+            center_of_gravities.append(center_of_gravity)
+        return dates[timeframe:], center_of_gravities
+
     def directional_indices(self):
         """
         Calculate directional indices.
@@ -554,8 +576,8 @@ class StockIndicators:
                 return r_variable
         r_value = calculate_r(high_2, close_2, low_2, open_1)
         k_value = calculate_k(high_2, low_2, close_1)
-        top_fraction = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
-        whole_fraction = top_fraction/r_value
+        numerator = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
+        whole_fraction = numerator/r_value
         swing_index = 50*whole_fraction*(k_value/limit_move)
         return swing_index
 
