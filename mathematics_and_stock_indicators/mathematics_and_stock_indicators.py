@@ -80,14 +80,14 @@ class GraphData:
                 converters={0: self.bytes_date_to_number('%Y-%m-%d %H:%M:%S')}
                 )
             new_array = []
-            for x_variable in range(0, len(date)):
+            for count, element in enumerate(date):
                 append_line = (
-                    date[x_variable],
-                    open_price[x_variable],
-                    high_price[x_variable],
-                    low_price[x_variable],
-                    close_price[x_variable],
-                    volume[x_variable]
+                    element,
+                    open_price[count],
+                    high_price[count],
+                    low_price[count],
+                    close_price[count],
+                    volume[count]
                     )
                 new_array.append(append_line)
             average_1 = self.moving_average(close_price, moving_average_1)
@@ -459,6 +459,19 @@ class StockIndicators:
         else:
             negative_directional_movement = 0
         return date, positive_directional_movement, negative_directional_movement
+
+    def standard_deviation(self, timeframe):
+        """
+        DOCSTRING
+        """
+        standard_deviations = []
+        standard_deviation_dates = []
+        for count, element in enumerate(self.date, timeframe):
+            array_to_consider = self.close_price[count-timeframe:count]
+            standard_deviation = array_to_consider.std()
+            standard_deviations.append(standard_deviation)
+            standard_deviation_dates.append(element)
+        return  standard_deviation_dates, standard_deviations
 
     def swing_index(
             self,
