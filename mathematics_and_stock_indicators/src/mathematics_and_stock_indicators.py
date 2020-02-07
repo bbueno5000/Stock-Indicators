@@ -16,7 +16,9 @@ matplotlib.rcParams.update({'font.size': 9})
 LIMIT_MOVE = 75
 
 class GraphData:
-
+    """
+    DOCSTRING
+    """
     def bytes_date_to_number(self, fmt, encoding='utf-8'):
         """
         DOCSTRING
@@ -75,21 +77,21 @@ class GraphData:
                 stock_file,
                 delimiter=',',
                 unpack=True,
-                converters={0: bytes_date_to_number('%Y-%m-%d %H:%M:%S')}
+                converters={0: self.bytes_date_to_number('%Y-%m-%d %H:%M:%S')}
                 )
             new_array = []
-            for x_variable in range(0, len(date)):
+            for count, element in enumerate(date):
                 append_line = (
-                    date[x_variable],
-                    open_price[x_variable],
-                    high_price[x_variable],
-                    low_price[x_variable],
-                    close_price[x_variable],
-                    volume[x_variable]
+                    element,
+                    open_price[count],
+                    high_price[count],
+                    low_price[count],
+                    close_price[count],
+                    volume[count]
                     )
                 new_array.append(append_line)
-            average_1 = moving_average(close_price, moving_average_1)
-            average_2 = moving_average(close_price, moving_average_2)
+            average_1 = self.simple_moving_average(close_price, moving_average_1)
+            average_2 = self.simple_moving_average(close_price, moving_average_2)
             starting_point = len(date[moving_average_2-1:])
             figure = pyplot.figure(facecolor='#07000d')
             axis_1 = pyplot.subplot2grid((6, 4), (1, 0), rowspan=4, colspan=4, axisbg='#07000d')
@@ -100,6 +102,10 @@ class GraphData:
                 colorup='#53c156',
                 colordown='#ff1717'
                 )
+            date, top_band, bottom_band, middle_band = StockIndicators().bollinger_bands(2, 20)
+            axis_1.plot(date[-starting_point:], top_band[-starting_point:], '#C1F9F7', alpha=0.7)
+            axis_1.plot(date[-starting_point:], bottom_band[-starting_point:], '#C1F9F7', alpha=0.7)
+            axis_1.plot(date[-starting_point:], middle_band[-starting_point:], '#C1F9F7', alpha=0.7)
             label_1 = str(moving_average_1)+' SMA'
             label_2 = str(moving_average_2)+' SMA'
             axis_1.plot(
@@ -147,7 +153,7 @@ class GraphData:
                 colspan=4,
                 axisbg='#07000d'
                 )
-            relative_strength_index = relative_strength_index(close_price)
+            relative_strength_index = self.relative_strength_index(close_price)
             relative_strength_index_color = '#c1f9f7'
             positive_color = '#386d13'
             negative_color = '#8f2020'
@@ -213,8 +219,8 @@ class GraphData:
                 )
             fillcolor = '#00ffe8'
             nema = 9
-            _, _, macd = macd(close_price)
-            ema9 = exponential_moving_average(macd, nema)
+            _, _, macd = self.macd(close_price)
+            ema9 = self.exponential_moving_average(macd, nema)
             axis_2.plot(date[-starting_point:], macd[-starting_point:], color='#4ee6fd', lw=2)
             axis_2.plot(date[-starting_point:], ema9[-starting_point:], color='#e1edf9', lw=1)
             axis_2.fill_between(
@@ -227,21 +233,19 @@ class GraphData:
                 )
             swing_index_y = []
             swing_index_date = []
-            for x_variable in range(1, len(date[1:])):
+            for count, element in enumerate(date[1:], 1):
                 try:
-                    y_variable = swing_index_calculation(
-                        open_price[x_variable-1],
-                        open_price[x_variable],
-                        high_price[x_variable-1],
-                        high_price[x_variable],
-                        low_price[x_variable-1],
-                        low_price[x_variable],
-                        close_price[x_variable-1],
-                        close_price[x_variable],
+                    y_variable = StockIndicators().swing_index(
+                        open_price[count-1],
+                        open_price[count],
+                        high_price[count],
+                        low_price[count],
+                        close_price[count-1],
+                        close_price[count],
                         LIMIT_MOVE
                         )
                     swing_index_y.append(y_variable)
-                    swing_index_date.append(date[x_variable])
+                    swing_index_date.append(element)
                 except Exception as exception:
                     print(str(exception))
             axis_2.plot(swing_index_date, swing_index_y, 'w', linewidth=1.5)
@@ -271,11 +275,11 @@ class GraphData:
                 horizontalalignment='right',
                 verticalalignment='bottom')
             pyplot.subplots_adjust(
-                left=0.09, 
-                bottom=0.14, 
-                right=0.94, 
-                top=0.95, 
-                wspace=0.20, 
+                left=0.09,
+                bottom=0.14,
+                right=0.94,
+                top=0.95,
+                wspace=0.20,
                 hspace=0
                 )
             pyplot.show()
@@ -289,11 +293,11 @@ class GraphData:
         using a fast and slow exponential moving average
         return value is emaslow, emafast, macd which are len(x) arrays
         """
-        ema_slow = exponential_moving_average(x_variable, slow)
-        ema_fast = exponential_moving_average(x_variable, fast)
+        ema_slow = self.exponential_moving_average(x_variable, slow)
+        ema_fast = self.exponential_moving_average(x_variable, fast)
         return ema_slow, ema_fast, ema_fast - ema_slow
 
-    def moving_average(self, values, window):
+    def simple_moving_average(self, values, window):
         """
         Calculate moving average.
         """
@@ -333,41 +337,45 @@ class StockIndicators:
     def __init__(self):
         sample_data = open('data/sample_data.txt', 'r').read()
         split_data = sample_data.split('\n')
-        self.date, 
-        self.close_price, 
-        self.high_price, 
-        self.low_price, 
-        self.open_price, 
-        volume = numpy.loadtxt(
-            split_data, 
-            delimiter=',', 
-            unpack=True
-            )
-    
+        self.date,\
+            self.close_price,\
+            self.high_price,\
+            self.low_price,\
+            self.open_price,\
+            _ = numpy.loadtxt(
+                split_data,
+                delimiter=',',
+                unpack=True
+                )
+
     def aroon(self, timeframe):
         """
         Calculate Aroon.
         """
         aroon_ups = []
-        aroon_downs=[]
+        aroon_downs = []
         aroon_dates = []
+        aroon_oscillations = []
         for x_variable in range(timeframe, len(self.date)):
-            aroon_up = ((self.high_price[x_variable-timefram:x_variable].to_list().index(
+            aroon_up = ((self.high_price[x_variable-timeframe:x_variable].to_list().index(
                 max(self.high_price[x_variable-timeframe:x_variable])
                 ))/float(timeframe))*100
-            aroon_down = ((self.low_price[x_variable-timefram:x_variable].to_list().index(
+            aroon_down = ((self.low_price[x_variable-timeframe:x_variable].to_list().index(
                 max(self.low_price[x_variable-timeframe:x_variable])
                 ))/float(timeframe))*100
+            aroon_oscillation = aroon_up-aroon_down
+            aroon_oscillations.append(aroon_oscillation)
             aroon_ups.append(aroon_up)
             aroon_downs.append(aroon_down)
             aroon_dates.append(self.date[x_variable])
-        return aroon_dates, aroon_ups, aroon_downs
+        return aroon_dates, aroon_ups, aroon_downs, aroon_oscillations
 
     def average_directional_index(self):
         """
         Calculate average directional index.
         """
-        positive_directional_index, negative_directional_index = directional_indices()
+        positive_directional_index, \
+            negative_directional_index = self.directional_indices()
         z_variable = 0
         directional_indices = []
         while z_variable < len(self.date[1:]):
@@ -377,8 +385,133 @@ class StockIndicators:
                 )
             directional_indices.append(directional_index)
             z_variable += 1
-        average_directional_index = exponential_moving_average(directional_indices, 14)
+        average_directional_index = GraphData().exponential_moving_average(directional_indices, 14)
         print(average_directional_index)
+
+    def bollinger_bands(self, multiplier, timeframe):
+        """
+        DOCSTRING
+        """
+        band_dates = []
+        top_bands = []
+        bottom_bands = []
+        middle_bands = []
+        for count, element in enumerate(self.date, timeframe):
+            current_simple_moving_average = GraphData().simple_moving_average(
+                self.close_price[count-timeframe:count], 
+                timeframe
+                )[-1]
+            _, current_standard_deviation = self.standard_deviation(
+                timeframe, 
+                self.close_price[0:timeframe]
+                )
+            current_standard_deviation = current_standard_deviation[-1]
+            tob_band = current_simple_moving_average+(current_standard_deviation*multiplier)
+            bottom_band = current_simple_moving_average-(current_standard_deviation*multiplier)
+            band_dates.append(element)
+            top_bands.append(top_band)
+            bottom_bands.append(bottom_band)
+            middle_bands.append(current_simple_moving_average)
+        return band_dates, top_bands, bottom_bands, middle_bands
+
+    def center_of_gravity(self, dates, data, timeframe):
+        """
+        DOCSTRING
+        """
+        center_of_gravities = []
+        for count, element_x in enumerate(dates):
+            consider = data[count-timeframe:count]
+            multipliers = range(1, timeframe+1)
+            numerator, denominator = 0, 0
+            reversed_order = reversed(consider)
+            ordered = []
+            for element_y in reversed_order:
+                ordered.append(element_y)
+            for multiplier in multipliers:
+                add_me = multiplier*ordered[multiplier-1]
+                add_me_2 = ordered[multiplier-1]
+                numerator += add_me
+                denominator += add_me_2
+            center_of_gravity = -(numerator/float(denominator))
+            center_of_gravities.append(center_of_gravity)
+        return dates[timeframe:], center_of_gravities
+
+    def chaikin_money_flow(
+            self, 
+            date, 
+            close_price, 
+            high_price, 
+            low_price, 
+            open_price, 
+            volume, 
+            timeframe):
+        """
+        DOCSTRING
+        """
+        chaikin_money_flows = []
+        money_flow_multipliers = []
+        money_flow_volumes = []
+        for count, element_x in enumerate(date, timeframe):
+            period_volume = 0
+            volume_range = volume[count-timeframe:count]
+            for element_y in volume_range:
+                period_volume += element_y
+            money_flow_multiplier = (
+                (close_price[count]-low_price[count])-(high_price[count]-close_price[count])
+                 )/(high_price[count]-low_price[count])
+            money_flow_volume = money_flow_multiplier*period_volume
+            money_flow_multipliers.append(money_flow_multiplier)
+            money_flow_volumes.append(money_flow_volume)
+        for count in enumerate(money_flow_volumes, timeframe):
+            period_volume = 0
+            volume_range = volume[count-timeframe:count]
+            for element_y in volume_range:
+                period_volume += element_y
+            consider = money_flow_volumes[count-timeframe:count]
+            timeframes_money_flow_volume = 0
+            for element in consider:
+                timeframes_money_flow_volume += element
+            timeframes_chaikin_money_flow = timeframes_money_flow_volume/period_volume
+            chaikin_money_flows.append(timeframes_chaikin_money_flow)
+        return date[timeframe+timeframe:], chaikin_money_flows
+
+    def chaikin_volatility(self, ema_used, periods_ago):
+        """
+        DOCSTRING
+        """
+        chaikin_volatilities = []
+        highs_minus_lows = []
+        for count, element in enumerate(self.date):
+            high_minus_low = self.high_price[count]-self.low_price[count]
+            highs_minus_lows.append(high_minus_low)
+        high_minus_low_ema = GraphData().exponential_moving_average(highs_minus_lows, ema_used)
+        y_variable = ema_used + periods_ago
+        for count, element in enumerate(self.date, y_variable):
+            chaikin_volatility = self.percent_change(
+                highs_minus_lows_ema[count-periods_ago], 
+                high_minus_low_ema[count]
+                )
+            chaikin_volatilities.append(chaikin_volatility)
+        return date[y_variable:], chaikin_volatilities
+
+    def chande_momentum_oscillator(self, prices, timeframe):
+        """
+        DOCSTRING
+        """
+        chande_momentum_oscillators = []
+        for count_x, element in enumerate(prices, timeframe):
+            consideration_prices = prices[count_x-timeframe:count_x]
+            up_sum, down_sum = 0, 0 
+            for count_y in range(1, timeframe):
+                current_price = consideration_prices[count_y]
+                previous_price = consideration_prices[count_y-1]
+                if current_price >= previous_price:
+                    up_sum += current_price-previous_price
+                else:
+                    down_sum += previous_price-current_price
+            current_cmo = ((up_sum-down_sum)/float(up_sum+down_sum))*100.00
+            chande_momentum_oscillators.append(current_cmo)
+        return self.date[timeframe:], chande_momentum_oscillators
 
     def directional_indices(self):
         """
@@ -399,54 +532,48 @@ class StockIndicators:
                 )
             true_range_dates.append(true_range_date)
             true_ranges.append(true_range)
-            directional_movement_date, \
+            _, \
                 positive_directional_movement, \
-                negative_directional_movement = directional_movement(
+                negative_directional_movement = self.directional_movement(
                     self.date[x_variable],
-                    self.open_price[x_variable],
                     self.high_price[x_variable],
                     self.low_price[x_variable],
-                    self.close_price[x_variable],
                     self.open_price[x_variable-1],
-                    self.high_price[x_variable-1],
-                    self.low_price[x_variable-1],
-                    self.close_price[x_variable-1],
+                    self.high_price[x_variable-1]
                     )
             positive_directional_movements.append(positive_directional_movement)
             negative_directional_movements.append(negative_directional_movement)
-        exponential_positive_directional_movement = exponential_moving_average(
+        exponential_positive_directional_movement = GraphData().exponential_moving_average(
             positive_directional_movements, 14
             )
-        exponential_negative_directional_movement = exponential_moving_average(
+        exponential_negative_directional_movement = GraphData().exponential_moving_average(
             negative_directional_movements, 14
             )
-        average_true_ranges = exponential_moving_average(true_ranges, 14)
+        average_true_ranges = GraphData().exponential_moving_average(true_ranges, 14)
         y_variable = 1
         positive_directional_movements = []
         negative_directional_movements = []
         while y_variable < len(average_true_ranges):
             positive_directional_movement = 100*(
-                exponential_positive_directional_movement[y_variable]/average_true_ranges[y_variable]
+                exponential_positive_directional_movement[y_variable]/
+                average_true_ranges[y_variable]
                 )
             positive_directional_movements.append(positive_directional_movement)
             negative_directional_movement = 100*(
-                exponential_negative_directional_movement[y_variable]/average_true_ranges[y_variable]
+                exponential_negative_directional_movement[y_variable]/
+                average_true_ranges[y_variable]
                 )
             negative_directional_movements.append(negative_directional_movement)
             y_variable += 1
         return positive_directional_movements, negative_directional_movements
 
     def directional_movement(
-        self,
-        date,
-        open_price,
-        high_price,
-        low_price,
-        close_price,
-        yesterdays_open_price,
-        yesterdays_high_price,
-        yesterdays_low_price,
-        yesterdays_close_price):
+            self,
+            date,
+            high_price,
+            low_price,
+            yesterdays_high_price,
+            yesterdays_low_price):
         """
         Calculate directional movement.
         """
@@ -462,17 +589,34 @@ class StockIndicators:
             negative_directional_movement = 0
         return date, positive_directional_movement, negative_directional_movement
 
+    def percent_change(self, start_point, current_point):
+        """
+        DOCSTRING
+        """
+        return ((float(current_point)-starting_point)/abs(start_point))*100.00
+
+    def standard_deviation(self, timeframe, prices):
+        """
+        DOCSTRING
+        """
+        standard_deviations = []
+        standard_deviation_dates = []
+        for count, element in enumerate(prices, timeframe):
+            array_to_consider = prices[count-timeframe:count]
+            standard_deviation = array_to_consider.std()
+            standard_deviations.append(standard_deviation)
+            standard_deviation_dates.append(element)
+        return standard_deviation_dates, standard_deviations
+
     def swing_index(
-        self,
-        open_1,
-        open_2,
-        high_1,
-        high_2,
-        low_1,
-        low_2,
-        close_1,
-        close_2,
-        limit_move):
+            self,
+            open_1,
+            open_2,
+            high_2,
+            low_2,
+            close_1,
+            close_2,
+            limit_move):
         """
         Calculate swing index.
         """
@@ -491,7 +635,7 @@ class StockIndicators:
                 print(k_variable)
                 return k_variable
 
-        def calculate_r(high_2, close_1, low_2, open_1, limit_move):
+        def calculate_r(high_2, close_1, low_2, open_1):
             """
             Calculate R value.
             """
@@ -513,21 +657,19 @@ class StockIndicators:
                 r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
                 print(r_variable)
                 return r_variable
-        r_value = calculate_r(high_2, close_2, low_2, open_1, limit_move)
+        r_value = calculate_r(high_2, close_2, low_2, open_1)
         k_value = calculate_k(high_2, low_2, close_1)
-        top_fraction = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
-        whole_fraction = top_fraction/r_value
+        numerator = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
+        whole_fraction = numerator/r_value
         swing_index = 50*whole_fraction*(k_value/limit_move)
         return swing_index
 
     def true_range(
-        self,
-        date,
-        close_price,
-        high_price,
-        low_price,
-        open_price,
-        yesterdays_close_price):
+            self,
+            date,
+            high_price,
+            low_price,
+            yesterdays_close_price):
         """
         Calculate true range.
         """
@@ -545,4 +687,4 @@ class StockIndicators:
 if __name__ == '__main__':
     while True:
         STOCK = input('Stock to plot:')
-        graph_data(STOCK, 10, 50)
+        GraphData().graph_data(STOCK, 10, 50)
