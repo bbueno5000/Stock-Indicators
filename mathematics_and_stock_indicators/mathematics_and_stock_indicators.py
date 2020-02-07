@@ -475,6 +475,25 @@ class StockIndicators:
             chaikin_money_flows.append(timeframes_chaikin_money_flow)
         return date[timeframe+timeframe:], chaikin_money_flows
 
+    def chaikin_volatility(self, ema_used, periods_ago):
+        """
+        DOCSTRING
+        """
+        chaikin_volatilities = []
+        highs_minus_lows = []
+        for count, element in enumerate(self.date):
+            high_minus_low = self.high_price[count]-self.low_price[count]
+            highs_minus_lows.append(high_minus_low)
+        high_minus_low_ema = GraphData().exponential_moving_average(highs_minus_lows, ema_used)
+        y_variable = ema_used + periods_ago
+        for count, element in enumerate(self.date, y_variable):
+            chaikin_volatility = self.percent_change(
+                highs_minus_lows_ema[count-periods_ago], 
+                high_minus_low_ema[count]
+                )
+            chaikin_volatilities.append(chaikin_volatility)
+        return date[y_variable:], chaikin_volatilities
+
     def directional_indices(self):
         """
         Calculate directional indices.
@@ -550,6 +569,12 @@ class StockIndicators:
         else:
             negative_directional_movement = 0
         return date, positive_directional_movement, negative_directional_movement
+
+    def percent_change(self, start_point, current_point):
+        """
+        DOCSTRING
+        """
+        return ((float(current_point)-starting_point)/abs(start_point))*100.00
 
     def standard_deviation(self, timeframe, prices):
         """
