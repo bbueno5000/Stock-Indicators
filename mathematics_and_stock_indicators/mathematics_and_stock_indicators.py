@@ -436,6 +436,45 @@ class StockIndicators:
             center_of_gravities.append(center_of_gravity)
         return dates[timeframe:], center_of_gravities
 
+    def chaikin_money_flow(
+            self, 
+            date, 
+            close_price, 
+            high_price, 
+            low_price, 
+            open_price, 
+            volume, 
+            timeframe):
+        """
+        DOCSTRING
+        """
+        chaikin_money_flows = []
+        money_flow_multipliers = []
+        money_flow_volumes = []
+        for count, element_x in enumerate(date, timeframe):
+            period_volume = 0
+            volume_range = volume[count-timeframe:count]
+            for element_y in volume_range:
+                period_volume += element_y
+            money_flow_multiplier = (
+                (close_price[count]-low_price[count])-(high_price[count]-close_price[count])
+                 )/(high_price[count]-low_price[count])
+            money_flow_volume = money_flow_multiplier*period_volume
+            money_flow_multipliers.append(money_flow_multiplier)
+            money_flow_volumes.append(money_flow_volume)
+        for count in enumerate(money_flow_volumes, timeframe):
+            period_volume = 0
+            volume_range = volume[count-timeframe:count]
+            for element_y in volume_range:
+                period_volume += element_y
+            consider = money_flow_volumes[count-timeframe:count]
+            timeframes_money_flow_volume = 0
+            for element in consider:
+                timeframes_money_flow_volume += element
+            timeframes_chaikin_money_flow = timeframes_money_flow_volume/period_volume
+            chaikin_money_flows.append(timeframes_chaikin_money_flow)
+        return date[timeframe+timeframe:], chaikin_money_flows
+
     def directional_indices(self):
         """
         Calculate directional indices.
