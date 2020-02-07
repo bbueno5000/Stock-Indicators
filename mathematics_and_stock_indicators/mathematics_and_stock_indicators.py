@@ -494,6 +494,25 @@ class StockIndicators:
             chaikin_volatilities.append(chaikin_volatility)
         return date[y_variable:], chaikin_volatilities
 
+    def chande_momentum_oscillator(self, prices, timeframe):
+        """
+        DOCSTRING
+        """
+        chande_momentum_oscillators = []
+        for count_x, element in enumerate(prices, timeframe):
+            consideration_prices = prices[count_x-timeframe:count_x]
+            up_sum, down_sum = 0, 0 
+            for count_y in range(1, timeframe):
+                current_price = consideration_prices[count_y]
+                previous_price = consideration_prices[count_y-1]
+                if current_price >= previous_price:
+                    up_sum += current_price-previous_price
+                else:
+                    down_sum += previous_price-current_price
+            current_cmo = ((up_sum-down_sum)/float(up_sum+down_sum))*100.00
+            chande_momentum_oscillators.append(current_cmo)
+        return self.date[timeframe:], chande_momentum_oscillators
+
     def directional_indices(self):
         """
         Calculate directional indices.
