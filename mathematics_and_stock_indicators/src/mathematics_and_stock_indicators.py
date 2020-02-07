@@ -406,7 +406,7 @@ class StockIndicators:
                 self.close_price[0:timeframe]
                 )
             current_standard_deviation = current_standard_deviation[-1]
-            tob_band = current_simple_moving_average+(current_standard_deviation*multiplier)
+            top_band = current_simple_moving_average+(current_standard_deviation*multiplier)
             bottom_band = current_simple_moving_average-(current_standard_deviation*multiplier)
             band_dates.append(element)
             top_bands.append(top_band)
@@ -488,11 +488,11 @@ class StockIndicators:
         y_variable = ema_used + periods_ago
         for count, element in enumerate(self.date, y_variable):
             chaikin_volatility = self.percent_change(
-                highs_minus_lows_ema[count-periods_ago], 
+                high_minus_low_ema[count-periods_ago], 
                 high_minus_low_ema[count]
                 )
             chaikin_volatilities.append(chaikin_volatility)
-        return date[y_variable:], chaikin_volatilities
+        return self.date[y_variable:], chaikin_volatilities
 
     def chande_momentum_oscillator(self, prices, timeframe):
         """
@@ -512,6 +512,48 @@ class StockIndicators:
             current_cmo = ((up_sum-down_sum)/float(up_sum+down_sum))*100.00
             chande_momentum_oscillators.append(current_cmo)
         return self.date[timeframe:], chande_momentum_oscillators
+
+    def commodity_channel_index(
+            self,
+            date, 
+            close_price, 
+            high_price, 
+            low_price, 
+            open_price, 
+            volume, 
+            timeframe,
+            simple_moving_average):
+        """
+        DOCSTRING
+        """
+        typical_prices = []
+        mean_deviations = []
+        commodity_channel_indices = []
+        for count, element in enumerate(high_price):
+            typical_price = (high_price[count]+low_price[count]+close_price[count])/3
+            typical_prices.append(typical_price)
+        sma_typical_prices = GraphData().simple_moving_average(
+            typical_prices, 
+            simple_moving_average
+            )
+        typical_prices = typical_prices[simple_moving_average-1:]
+        for count_a, element in enumerate(sma_typical_prices, timeframe):
+            typical_prices_considered = typical_prices[count_a-timeframe:count_a]
+            sma_typical_prices_considered = sma_typical_prices[count_a-timeframe:count_a]
+            mean_deviation_sum = 0
+            for count_b, element in enumerate(sma_typical_prices_considered, timeframe):
+                mean_deviation = abs(
+                    typical_prices_considered[count_b]-sma_typical_prices_considered[count_b]
+                    )
+                mean_deviation_sum += mean_deviation
+            mean_deviations.append(mean_deviation_sum/timeframe)
+        typical_prices = typical_prices[14:]
+        sma_typical_prices = sma_typical_prices[14:]
+        for count in range(0, sma_typical_prices):
+            commodity_channel_indices.append(
+                (typical_prices[count]-sma_typical_prices[count])/(0.015*mean_deviations[count])
+            )
+        return self.date[timefram+simple_moving_average-1:], commodity_channel_indices
 
     def directional_indices(self):
         """
@@ -593,7 +635,7 @@ class StockIndicators:
         """
         DOCSTRING
         """
-        return ((float(current_point)-starting_point)/abs(start_point))*100.00
+        return ((float(current_point)-start_point)/abs(start_point))*100.00
 
     def standard_deviation(self, timeframe, prices):
         """
