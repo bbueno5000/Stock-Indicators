@@ -631,6 +631,27 @@ class StockIndicators:
             negative_directional_movement = 0
         return date, positive_directional_movement, negative_directional_movement
 
+    def ease_of_movement(
+            self,
+            date, 
+            close_prices, 
+            high_prices, 
+            low_prices, 
+            open_prices, 
+            volumes, 
+            timeframe):
+        """
+        DOCSTRING
+        """
+        one_period_emvs = []
+        for count, element in enumerate(close_prices, 1):
+            movement = ((high_prices[count]+low_prices[count])/2)-\
+                ((high_prices[count-1]+low_prices[count-1])/2)
+            box_rate = (volumes[count]/1000000.00)/(high_prices[count]-low_prices[count])
+            one_period_emvs.append(movement/box_rate)
+        emv_timeframe = GraphData().simple_moving_average(one_period_emvs, timeframe)
+        return self.date[timeframe:], emv_timeframe
+
     def percent_change(self, start_point, current_point):
         """
         DOCSTRING
