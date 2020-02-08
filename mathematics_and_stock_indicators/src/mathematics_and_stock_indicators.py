@@ -3,6 +3,7 @@ DOCSTRING
 """
 import datetime
 import urllib
+import math
 import matplotlib
 import matplotlib.dates as mpl_dates
 import matplotlib.ticker as mpl_ticker
@@ -10,6 +11,7 @@ import matplotlib.pyplot as pyplot
 import mpl_finance
 import numpy
 import pylab
+import time
 
 matplotlib.rcParams.update({'font.size': 9})
 
@@ -666,6 +668,26 @@ class StockIndicators:
             eelder_force_indices.append((close_prices[count]-close_prices[count-1])*volumes[count])
         timeframe_efi = GraphData().simple_moving_average(elder_force_indices, timeframe)
         return self.dates[1:], timeframe_efi
+
+    def gopalakrishnan_range_index(
+            self,
+            dates,
+            high_prices,
+            low_prices,
+            timeframe):
+        """
+        DOCSTRING
+        """
+        gopalakrishnan_range_indices = []
+        for count, element in enumerate(dates, timeframe):
+            highs_considered = high_prices[count-timeframe:count]
+            lows_considered = low_prices[count-timeframe:count]
+            highest_high = max(highs_considered)
+            lowest_low = min(lows_considered)
+            gopalakrishnan_range_index.append(
+                math.log(highest_high-lowest_low)/math.log(timeframe)
+                )
+        return dates[timeframe:], gopalakrishnan_range_indices
 
     def percent_change(self, start_point, current_point):
         """
