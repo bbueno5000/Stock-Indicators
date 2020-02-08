@@ -689,6 +689,22 @@ class StockIndicators:
                 )
         return dates[timeframe:], gopalakrishnan_range_indices
 
+    def highest_high_lowest_low(
+            self,
+            dates,
+            close_prices,
+            timeframe):
+        """
+        DOCSTRING
+        """
+        highest_highs = []
+        lowest_lows = []
+        for count, element in enumerate(dates, timeframe):
+            values_considered = close_prices[count-timeframe:count]
+            highest_highs.append(max(values_considered))
+            lowest_lows.append(min(values_considered))
+        return dates, highest_highs, lowest_lows
+
     def percent_change(self, start_point, current_point):
         """
         DOCSTRING
