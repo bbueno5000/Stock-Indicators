@@ -652,6 +652,21 @@ class StockIndicators:
         emv_timeframe = GraphData().simple_moving_average(one_period_emvs, timeframe)
         return self.date[timeframe:], emv_timeframe
 
+    def elder_force_index(
+            self,
+            date, 
+            close_prices,
+            volumes, 
+            timeframe):
+        """
+        DOCSTRING
+        """
+        elder_force_indices = []
+        for count, element in enumerate(date, 1):
+            eelder_force_indices.append((close_prices[count]-close_prices[count-1])*volumes[count])
+        timeframe_efi = GraphData().simple_moving_average(elder_force_indices, timeframe)
+        return self.dates[1:], timeframe_efi
+
     def percent_change(self, start_point, current_point):
         """
         DOCSTRING
