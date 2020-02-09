@@ -19,7 +19,7 @@ LIMIT_MOVE = 75
 
 class AverageTrueRange:
 
-    def __init__(
+    def __call__(
             self,
             dates,
             close_prices,
@@ -806,7 +806,11 @@ class StockIndicators:
             standard_deviation_dates.append(element)
         return standard_deviation_dates, standard_deviations
 
-    def swing_index(
+class SwingIndex:
+    """
+    DOCSTRING
+    """
+    def __call__(
             self,
             open_1,
             open_2,
@@ -818,49 +822,50 @@ class StockIndicators:
         """
         Calculate swing index.
         """
-        def calculate_k(high_2, low_2, close_1):
-            """
-            Calculate K value.
-            """
-            x_variable = high_2-close_1
-            y_variable = low_2-close_1
-            if x_variable > y_variable:
-                k_variable = x_variable
-                print(k_variable)
-                return k_variable
-            else:
-                k_variable = y_variable
-                print(k_variable)
-                return k_variable
-
-        def calculate_r(high_2, close_1, low_2, open_1):
-            """
-            Calculate R value.
-            """
-            x_variable = high_2-close_1
-            y_variable = low_2-close_1
-            z_variable = high_2-low_2
-            if z_variable < x_variable > y_variable:
-                print('x wins')
-                r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
-                print(r_variable)
-                return r_variable
-            elif x_variable < y_variable > z_variable:
-                print('y wins')
-                r_variable = (low_2-close_1)-(0.5*(high_2-close_1))+(0.25*(close_1-open_1))
-                print(r_variable)
-                return r_variable
-            elif x_variable < z_variable > y_variable:
-                print('z wins')
-                r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
-                print(r_variable)
-                return r_variable
-        r_value = calculate_r(high_2, close_2, low_2, open_1)
-        k_value = calculate_k(high_2, low_2, close_1)
+        r_value = self.calculate_r(high_2, close_2, low_2, open_1)
+        k_value = self.calculate_k(high_2, low_2, close_1)
         numerator = close_2-close_1+(0.5*(close_2-open_2))+(0.25*(close_1-open_1))
         whole_fraction = numerator/r_value
         swing_index = 50*whole_fraction*(k_value/limit_move)
         return swing_index
+
+    def calculate_k(self, high_2, low_2, close_1):
+        """
+        Calculate K value.
+        """
+        x_variable = high_2-close_1
+        y_variable = low_2-close_1
+        if x_variable > y_variable:
+            k_variable = x_variable
+            print(k_variable)
+            return k_variable
+        else:
+            k_variable = y_variable
+            print(k_variable)
+            return k_variable
+
+    def calculate_r(self, high_2, close_1, low_2, open_1):
+        """
+        Calculate R value.
+        """
+        x_variable = high_2-close_1
+        y_variable = low_2-close_1
+        z_variable = high_2-low_2
+        if z_variable < x_variable > y_variable:
+            print('x wins')
+            r_variable = (high_2-close_1)-(0.5*(low_2-close_1))+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
+        elif x_variable < y_variable > z_variable:
+            print('y wins')
+            r_variable = (low_2-close_1)-(0.5*(high_2-close_1))+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
+        elif x_variable < z_variable > y_variable:
+            print('z wins')
+            r_variable = (high_2-low_2)+(0.25*(close_1-open_1))
+            print(r_variable)
+            return r_variable
 
 if __name__ == '__main__':
     while True:
