@@ -17,6 +17,54 @@ matplotlib.rcParams.update({'font.size': 9})
 
 LIMIT_MOVE = 75
 
+class AverageTrueRange:
+
+    def __init__(
+            self,
+            dates,
+            close_prices,
+            high_prices,
+            low_prices,
+            open_prices,
+            timeframe):
+        """
+        DOCSTRING
+        """
+        true_range_dates = []
+        true_ranges = []
+        for count, element in enumerate(dates, 1):
+            true_range_date, true_range = self.true_range(
+                dates[count],
+                close_prices[count],
+                high_prices[count],
+                low_prices[count],
+                open_prices[count],
+                close_prices[count-1]
+                )
+            true_range_dates.append(true_range_date)
+            true_ranges.append(true_range)
+        return GraphData().exponential_moving_average(true_ranges, 14)
+
+    def true_range(
+            self,
+            date,
+            high_price,
+            low_price,
+            yesterdays_close_price):
+        """
+        Calculate true range.
+        """
+        x_variable = high_price-low_price
+        y_variable = abs(high_price-yesterdays_close_price)
+        z_variable = abs(low_price-yesterdays_close_price)
+        if y_variable <= x_variable >= z_variable:
+            true_range = x_variable
+        elif x_variable <= y_variable >= z_variable:
+            true_range = y_variable
+        elif x_variable <= z_variable >= y_variable:
+            true_range = z_variable
+        return date, true_range
+
 class GraphData:
     """
     DOCSTRING
@@ -705,6 +753,40 @@ class StockIndicators:
             lowest_lows.append(min(values_considered))
         return dates, highest_highs, lowest_lows
 
+    def keltner_channels(
+            self, 
+            dates,
+            close_prices,
+            high_prices,
+            low_prices,
+            open_prices,
+            volumes,
+            timeframe_a, 
+            timeframe_b
+            ):
+        """
+        DOCSTRING
+        """
+        upper_line = []
+        middle_line = []
+        lower_line = []
+        average_true_ranges = AverageTrueRange(
+            dates,
+            close_prices,
+            high_prices,
+            low_prices,
+            open_prices,
+            volumes,
+            timeframe_b
+            )
+        timeframe_ema = GraphData().exponential_moving_average(close_prices, timeframe_a)
+        timeframe_ema = timeframe_ema[1:]
+        for count, element in enumerate(timeframe_ema):
+            upper_lines.append(timeframe_ema[count]+(2*average_true_ranges[count]))
+            middle_lines.append(timeframe_ema[count])
+            lower_lines.append(timeframe_ema[count]-(2*average_true_ranges[count]))
+        return upper_line, middle_line, lower_line
+
     def percent_change(self, start_point, current_point):
         """
         DOCSTRING
@@ -779,26 +861,6 @@ class StockIndicators:
         whole_fraction = numerator/r_value
         swing_index = 50*whole_fraction*(k_value/limit_move)
         return swing_index
-
-    def true_range(
-            self,
-            date,
-            high_price,
-            low_price,
-            yesterdays_close_price):
-        """
-        Calculate true range.
-        """
-        x_variable = high_price-low_price
-        y_variable = abs(high_price-yesterdays_close_price)
-        z_variable = abs(low_price-yesterdays_close_price)
-        if y_variable <= x_variable >= z_variable:
-            true_range = x_variable
-        elif x_variable <= y_variable >= z_variable:
-            true_range = y_variable
-        elif x_variable <= z_variable >= y_variable:
-            true_range = z_variable
-        return date, true_range
 
 if __name__ == '__main__':
     while True:
