@@ -787,6 +787,20 @@ class StockIndicators:
             lower_lines.append(timeframe_ema[count]-(2*average_true_ranges[count]))
         return upper_line, middle_line, lower_line
 
+    def moving_average_envelope(self, prices, timeframe):
+        """
+        DOCSTRING
+        """
+        upper_line = []
+        middle_line = []
+        lower_line = []
+        simple_moving_averages = GraphData().simple_moving_average(prices, timeframe)
+        for simple_moving_average in simple_moving_averages:
+            upper_line.append(simple_moving_average+(0.5*simple_moving_average))
+            middle_line.append(simple_moving_average-(0.5*simple_moving_average))
+            lower_line.append(simple_moving_average)
+        return upper_line, lower_line, middle_line
+
     def percent_change(self, start_point, current_point):
         """
         DOCSTRING
